@@ -21,7 +21,7 @@ class DocumentRepository:
         metadata : UploadMetadata
     ):
         
-        doc_metadata = {**asdict(metadata) ,}
+        doc_metadata = {**asdict(metadata) }
 
         document = Document(
             

@@ -1,5 +1,6 @@
 from services.extraction.txt_extractor import TXTExtractionService
 from services.extraction.pdf_extractor import PDFExtractionService
+from fastapi import HTTPException
 
 class ExtractionFactory:
 
@@ -18,6 +19,9 @@ class ExtractionFactory:
         extractor = self.extractors.get(content_type)
 
         if extractor is None:
-            raise ValueError("unsupported file type")
+           raise HTTPException(
+                           status_code=415,
+                           detail="Unsupported file type."
+                       )
 
         return extractor

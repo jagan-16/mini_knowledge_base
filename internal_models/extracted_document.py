@@ -9,9 +9,13 @@ class ExtractedPage:
 
 @dataclass
 class ExtractedDocument:
+
     filename: str
+
     title: str | None
+
     author: str | None
+
     page_count: int
+
     pages: list[ExtractedPage]
-    metadata: dict

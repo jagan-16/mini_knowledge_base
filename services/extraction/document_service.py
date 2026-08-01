@@ -1,4 +1,5 @@
 from uuid import uuid4
+from internal_models import extracted_document
 from services.extraction.file_storage_service import FileStorageService
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
@@ -8,8 +9,10 @@ from services.extraction.embedding_service import EmbeddingService
 from repositories.document_repository import DocumentRepository
 from repositories.chunk_repository import ChunkRepository
 from internal_models.upload_data import UploadMetadata
-from internal_models.chunk_metadata import ChunkMetadata
-
+from services.validation.document_validation import (
+    DocumentValidator,
+)
+from fastapi import HTTPException
 
 class DocumentService:
 
@@ -20,6 +23,8 @@ class DocumentService:
         
         self.document_repository = DocumentRepository(db)
         self.chunk_repository = ChunkRepository(db)
+        
+        self.document_validator = DocumentValidator()
         
         self.file_storage_service = FileStorageService()
         self.extraction_service = ExtractionService()
@@ -33,7 +38,12 @@ class DocumentService:
         
     ):
         
-        
+        if file.size == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Uploaded file is empty."
+            )
+
         document_id = uuid4()
         stored_file = None
        
@@ -49,7 +59,12 @@ class DocumentService:
                     # Step 2: Extract PDF
                     extracted_document = self.extraction_service.extract(file)
 
-                    # Step 3: Save document
+                    # Step 3 : check if file is empty or has no text
+                    self.document_validator.validate(
+                     extracted_document 
+                    )
+
+                    # Step 4: Save document
                     self.document_repository.create_document(
                         document_id=document_id,
                         extracted_document=extracted_document,
@@ -58,17 +73,17 @@ class DocumentService:
                         
                     )
 
-                    # Step 4: Create chunks
+                    # Step 5: Create chunks
                     chunks = self.chunking_service.chunk_document(
                         extracted_document
                     )
 
-                    # Step 5: Generate embeddings
+                    # Step 6: Generate embeddings
                     embeddings = self.embedding_service.generate_embeddings(
                         chunks
                     )
 
-                    # Step 6: Save chunks
+                    # Step 7: Save chunks
                     self.chunk_repository.save_chunks(
                         document_id=document_id,
                         metadata= metadata,

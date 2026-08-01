@@ -1,9 +1,10 @@
 from dataclasses import asdict
+from http.client import HTTPException
 from uuid import UUID
 import logging
 from sqlalchemy.orm import Session
 from database_model import Chunk
-from internal_models.chunk_metadata import ChunkMetadata
+from internal_models.upload_data import UploadMetadata
 from internal_models.chunk_model import ChunkData
 
 
@@ -18,14 +19,15 @@ class ChunkRepository:
     def save_chunks(
         self,
         document_id: UUID,
-        metadata: ChunkMetadata ,
+        metadata: UploadMetadata,
         chunks: list[ChunkData],
         embeddings: list[list[float]]
     ) -> None:
 
         if len(chunks) != len(embeddings):
-            raise ValueError(
-                "Number of chunks and embeddings must match."
+            raise HTTPException(
+                status_code=400,
+                detail="Number of chunks and embeddings must match."
             )
      
         db_chunks = []
@@ -47,7 +49,7 @@ class ChunkRepository:
 
         self.db.add_all(db_chunks)
 
-        self.db.commit()
+
     
 
          

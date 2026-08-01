@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from fastapi import UploadFile
 
 from internal_models.extracted_document import (
@@ -13,25 +15,25 @@ class TXTExtractionService:
         file: UploadFile,
     ) -> ExtractedDocument:
 
-        text = (
-            file.file.read()
-            .decode("utf-8")
-            .strip()
-        )
+        try:
 
-        metadata = {
-            "title": file.filename,
-            "author": None,
-            "format": "Text File",
-            "content_type": file.content_type,
-        }
+            text = (
+                file.file.read()
+                .decode("utf-8")
+                .strip()
+            )
 
+        except UnicodeDecodeError as exc:
+
+            raise HTTPException(
+                status_code=400,
+                detail="Text file must be UTF-8 encoded."
+            ) from exc
         return ExtractedDocument(
             filename=file.filename,
             title=file.filename,
             author=None,
             page_count=1,
-            metadata=metadata,
             pages=[
                 ExtractedPage(
                     page_number=1,
