@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from model_loader import embedding_model
 from database_model import Chunk
 from services.extraction.embedding_service import EmbeddingService
 from services.retrieval_service import RetrievalService
@@ -7,10 +7,16 @@ from services.retrieval_service import RetrievalService
 
 class QueryService:
 
-    def __init__(self, db: Session):
-        self.embedding_service = EmbeddingService()
-        self.retrieval_service = RetrievalService(db)
 
+
+
+    def __init__(self, db: Session):
+
+        self.embedding_service = EmbeddingService(
+           model= embedding_model
+        )
+
+        self.retrieval_service = RetrievalService(db)
     def query(
         self,
         question: str,
