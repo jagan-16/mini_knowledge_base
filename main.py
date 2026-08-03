@@ -15,14 +15,13 @@ from pydantic_validation import (
     ConversationResponse
 )
 
-
-
+from fastapi.staticfiles import StaticFiles
 
 
 
 
 app = FastAPI(title="Mini Knowledge Base")
-
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 Base.metadata.create_all(bind=engine)
 
 

@@ -18,7 +18,6 @@ def render_welcome_screen():
     st.title("Mini Knowledge Base")
     st.write("Upload a document from the sidebar, then ask a question about it below.")
 
-
 def render_citations(citations: list):
     if not citations:
         return
@@ -26,9 +25,13 @@ def render_citations(citations: list):
         for c in citations:
             title = c.get("title", "Untitled")
             page = c.get("page_number")
+            url = c.get("document_url")
             page_text = f" — Page {page}" if page is not None else ""
-            st.markdown(f"- **{title}**{page_text}")
 
+            if url:
+                st.markdown(f"- [**{title}**]({url}){page_text}")
+            else:
+                st.markdown(f"- **{title}**{page_text}")  # fallback if no URL available
 
 def render_message_history():
     for message in st.session_state.messages:

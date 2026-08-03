@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from pathlib import Path
 
 from pydantic_validation import (
     Citation,
@@ -116,6 +117,39 @@ class QueryService:
             )
 
             self.db.commit()
+            
+            seen = set()
+
+            citations = []
+
+            for chunk in reranked_chunks:
+
+                    key = (
+                        chunk.document_id,
+                        chunk.page_number,
+                    )
+
+                    if key in seen:
+                        continue
+
+                    seen.add(key)
+
+                    citations.append(
+
+                        Citation(
+
+                            document_id=chunk.document_id,
+
+                            title=chunk.document_title,
+
+                            page_number=chunk.page_number,
+
+                            document_url=f"http://localhost:8000/uploads/{Path(chunk.file_path).name}#page={chunk.page_number}"
+
+                        )
+
+                    )
+
 
             return QuestionResponse(
 
@@ -124,24 +158,7 @@ class QueryService:
 
                 answer=answer,
 
-                citations=[
-
-                    Citation(
-
-                        document_id=chunk.document_id,
-
-                        title=chunk.document_title,
-
-                        page_number=chunk.page_number,
-
-                        document_url=chunk.file_path,
-
-                    )
-
-                    for chunk in reranked_chunks
-
-                ]
-
+                citations=citations
             )
 
         except Exception:
