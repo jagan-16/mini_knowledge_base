@@ -12,7 +12,7 @@ from internal_models.upload_data import UploadMetadata
 from services.validation.document_validation import (
     DocumentValidator,
 )
-from services.model_loader import embedding_model
+
 from fastapi import HTTPException
 
 class DocumentService:
@@ -30,7 +30,7 @@ class DocumentService:
         self.file_storage_service = FileStorageService()
         self.extraction_service = ExtractionService()
         self.chunking_service = ChunkingService()
-        self.embedding_service = EmbeddingService(model = embedding_model)
+        self.embedding_service = EmbeddingService()
 
     def process_document(
         self,

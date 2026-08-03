@@ -1,4 +1,5 @@
 from sentence_transformers import SentenceTransformer
+from services.model_loader import embedding_model
 
 from internal_models.chunk_model import ChunkData
 
@@ -7,12 +8,9 @@ class EmbeddingService:
 
 
 
-    def __init__(
-        self,
-        model: SentenceTransformer,
-    ):
-        self.model = model
-        
+    def __init__(self):
+        self.model = embedding_model
+
     def generate_embedding(self, text: str) -> list[float]:
 
         return self.model.encode(

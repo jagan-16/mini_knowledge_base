@@ -151,9 +151,10 @@ class Conversation(Base , TimestampMixin):
                          default= uuid.uuid4 , 
                          index= True ,
                         )        
-        message = relationship(
+        messages = relationship(
             "Message" , 
-            back_populates= "conversation"
+            back_populates= "conversation",
+             order_by="Message.created_at.asc()"
         )
        
 class Message(Base ,TimestampMixin ):
@@ -179,7 +180,7 @@ class Message(Base ,TimestampMixin ):
         
         conversation = relationship(
             "Conversation" ,
-            back_populates= "message"
+            back_populates= "messages"
         )  
         
        

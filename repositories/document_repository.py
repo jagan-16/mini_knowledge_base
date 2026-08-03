@@ -46,6 +46,34 @@ class DocumentRepository:
         self.db.add(document)
 
 
+    def list_documents(
+    self,
+    document_type: str | None = None,
+    department: str | None = None,
+) -> list[Document]:
+
+        query = self.db.query(Document)
+
+        if document_type is not None:
+
+            query = query.filter(
+                Document.doc_metadata["document_type"].astext
+                == document_type
+            )
+
+        if department is not None:
+
+            query = query.filter(
+                Document.doc_metadata["department"].astext
+                == department
+            )
+
+        return (
+            query
+            .order_by(Document.created_at.desc())
+            .all()
+        )
+
         
 
        

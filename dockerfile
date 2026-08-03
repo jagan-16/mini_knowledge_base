@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirement.txt .
 
 RUN pip install --no-cache-dir -r requirement.txt
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-en-v1.5')"
+RUN python -c "from sentence_transformers import CrossEncoder; CrossEncoder('BAAI/bge-reranker-base')"
 
 EXPOSE 8000
 

@@ -1,21 +1,25 @@
 from sqlalchemy.orm import Session
-
-from database_model import Chunk
+from internal_models.retrieval_filter import RetrievalFilter
+from internal_models.retrieved_chunk import RetrievedChunk
 from repositories.retrieval_repository import RetrievalRepository
 
 
 class RetrievalService:
 
-    def __init__(self, db: Session):
-        self.retrieval_repository = RetrievalRepository(db)
-
-    def retrieve_chunks(
+    def __init__(
+        self,
+        db: Session,
+    ):
+        self.retrieval_repository = RetrievalRepository(
+            db
+        )
+    def retrieve(
         self,
         query_embedding: list[float],
-        top_k: int
-    ) -> list[Chunk]:
+        retrieval_filter: RetrievalFilter,
+    ) -> list[RetrievedChunk]:
 
         return self.retrieval_repository.retrieve(
             query_embedding=query_embedding,
-            top_k=top_k
+            retrieval_filter=retrieval_filter,
         )
