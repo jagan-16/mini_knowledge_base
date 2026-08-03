@@ -16,6 +16,8 @@ def init_session_state():
     defaults = {
         "documents": [],              # list of document dicts from GET /documents
         "conversations": [],          # list of conversation dicts from GET /conversations
+        "selected_document_type": None,
+        "selected_department": None,
         "current_conversation_id": None,
         "selected_document_id": None,
         "messages": [],               # current conversation's messages, each: {role, content, citations?}
@@ -42,3 +44,91 @@ def append_message(role: str, content: str, citations: list | None = None):
     st.session_state.messages.append(
         {"role": role, "content": content, "citations": citations or []}
     )
+def render_search_filters():
+
+    st.sidebar.markdown("### 🔍 Search Filters")
+
+    documents = st.session_state.documents
+
+    if not documents:
+        st.sidebar.caption("Upload documents to enable filters.")
+        return
+
+    document_types = sorted(
+
+        {
+            doc["document_type"]
+            for doc in documents
+            if doc.get("document_type")
+        }
+
+    )
+
+    departments = sorted(
+
+        {
+            doc["department"]
+            for doc in documents
+            if doc.get("department")
+        }
+
+    )
+
+    scope = st.sidebar.radio(
+
+        "Search Scope",
+
+        [
+
+            "Entire Knowledge Base",
+
+            "Single Document",
+
+            "Document Type",
+
+            "Department",
+
+        ],
+
+    )
+
+    if scope == "Entire Knowledge Base":
+
+        st.session_state.selected_document_id = None
+        st.session_state.selected_document_type = None
+        st.session_state.selected_department = None
+
+    elif scope == "Document Type":
+
+        st.session_state.selected_document_id = None
+        st.session_state.selected_department = None
+
+        selected = st.sidebar.selectbox(
+
+            "Document Type",
+
+            document_types,
+
+        )
+
+        st.session_state.selected_document_type = selected
+
+    elif scope == "Department":
+
+        st.session_state.selected_document_id = None
+        st.session_state.selected_document_type = None
+
+        selected = st.sidebar.selectbox(
+
+            "Department",
+
+            departments,
+
+        )
+
+        st.session_state.selected_department = selected
+
+    elif scope == "Single Document":
+
+        st.session_state.selected_document_type = None
+        st.session_state.selected_department = None

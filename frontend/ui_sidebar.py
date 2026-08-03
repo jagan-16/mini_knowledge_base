@@ -9,7 +9,7 @@ import streamlit as st
 
 import api_client
 from config import DOCUMENT_TYPES
-from session_state import reset_conversation, set_conversation
+from session_state import render_search_filters, reset_conversation, set_conversation
 from utils import format_timestamp, conversation_label
 
 
@@ -51,6 +51,16 @@ def render_documents_section():
         st.sidebar.caption("No documents uploaded yet.")
         return
 
+    if st.session_state.selected_document_type is not None:
+        st.sidebar.info(
+            f"Filtering by document type: {st.session_state.selected_document_type}"
+        )
+
+    if st.session_state.selected_department is not None:
+        st.sidebar.info(
+            f"Filtering by department: {st.session_state.selected_department}"
+        )
+        
     if st.session_state.selected_document_id:
         if st.sidebar.button("✕ Clear document selection", use_container_width=True):
             st.session_state.selected_document_id = None
@@ -127,9 +137,19 @@ def render_conversations_section():
 
 
 def render_sidebar():
+
     st.sidebar.title("Mini Knowledge Base")
+
     render_upload_section()
+
     st.sidebar.divider()
+
+    render_search_filters()
+
+    st.sidebar.divider()
+
     render_documents_section()
+
     st.sidebar.divider()
+
     render_conversations_section()

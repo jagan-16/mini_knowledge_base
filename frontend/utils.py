@@ -5,6 +5,7 @@ Small formatting helpers shared across the UI modules.
 """
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 def format_timestamp(raw: str | None) -> str:
@@ -12,10 +13,17 @@ def format_timestamp(raw: str | None) -> str:
     if not raw:
         return ""
     try:
-        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(
+    raw.replace("Z","+00:00")
+)
+
+        dt = dt.astimezone(
+            ZoneInfo("Asia/Kolkata")
+        )
+
         return dt.strftime("%b %d, %Y %H:%M")
     except (ValueError, TypeError):
-        return raw
+            return raw
 
 
 def conversation_label(index: int) -> str:

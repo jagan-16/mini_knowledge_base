@@ -51,10 +51,19 @@ def handle_new_question(question: str):
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             ok, result = api_client.post_query(
+
                 question=question,
+
                 conversation_id=st.session_state.current_conversation_id,
+
                 document_id=st.session_state.selected_document_id,
+
+                document_type=st.session_state.selected_document_type,
+
+                department=st.session_state.selected_department,
+
                 top_k=TOP_K_DEFAULT,
+
             )
 
         if ok:
