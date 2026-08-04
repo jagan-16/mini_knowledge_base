@@ -45,7 +45,9 @@ class PDFExtractionService:
             pages.append(
                 ExtractedPage(
                     page_number=index + 1,
-                    text=page.get_text("text").strip()
+                    text=page.get_text("text")
+                            .replace("\x00", "")
+                            .strip()
                 )
             )
 

@@ -20,6 +20,7 @@ class TXTExtractionService:
             text = (
                 file.file.read()
                 .decode("utf-8")
+                .replace("\x00", "")
                 .strip()
             )
 

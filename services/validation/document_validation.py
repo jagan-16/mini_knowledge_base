@@ -19,7 +19,7 @@ class DocumentValidator:
 
         has_text = any(
 
-            page.text.strip()
+            page.text.strip().replace("\x00", "")
 
             for page in document.pages
 
