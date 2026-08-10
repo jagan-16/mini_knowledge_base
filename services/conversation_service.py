@@ -73,6 +73,7 @@ class ConversationService:
         conversation_id: UUID,
         question: str,
         answer: str,
+        citations: list | None = None,
     ) -> None:
 
         self.message_repository.save_many(
@@ -80,8 +81,8 @@ class ConversationService:
             conversation_id=conversation_id,
 
             messages=[
-                ("user", question),
-                ("assistant", answer),
+                ("user", question , []),
+                ("assistant", answer ,  citations or []),
             ],
         )
         
@@ -139,6 +140,7 @@ class ConversationService:
         id=message.id,
         role=message.role,
         content=message.content,
+        citations = message.citations,
         created_at=message.created_at,
     )
 

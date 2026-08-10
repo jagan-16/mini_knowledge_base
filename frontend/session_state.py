@@ -21,7 +21,9 @@ def init_session_state():
         "current_conversation_id": None,
         "selected_document_id": None,
         "messages": [],               # current conversation's messages, each: {role, content, citations?}
-        "startup_loaded": False,      # guards the one-time fetch on first load
+        "startup_loaded": False,  
+        "upload_success_message": None,
+        "upload_key_suffix": 0,# guards the one-time fetch on first load
     }
     for key, value in defaults.items():
         if key not in st.session_state:

@@ -15,11 +15,22 @@ from utils import format_timestamp, conversation_label
 
 def render_upload_section():
     with st.sidebar.expander("📤 Upload Document", expanded=False):
+
+        if st.session_state.upload_success_message:
+            st.success(st.session_state.upload_success_message)
+            st.session_state.upload_success_message = None
+
+        suffix = st.session_state.upload_key_suffix
+
         uploaded_file = st.file_uploader(
-            "Choose a PDF or TXT file", type=["pdf", "txt"], key="upload_file_input"
+            "Choose a PDF or TXT file", type=["pdf", "txt"], key=f"upload_file_input_{suffix}"
         )
-        document_type = st.selectbox("Document type", DOCUMENT_TYPES, key="upload_doc_type")
-        department = st.text_input("Department (optional)", key="upload_department")
+        document_type = st.selectbox(
+            "Document type", DOCUMENT_TYPES, key=f"upload_doc_type_{suffix}"
+        )
+        department = st.text_input(
+            "Department (optional)", key=f"upload_department_{suffix}"
+        )
 
         if st.button("Upload", type="primary", use_container_width=True):
             if uploaded_file is None:
@@ -32,7 +43,34 @@ def render_upload_section():
                 )
 
             if ok:
-                st.success(f"Uploaded '{result.get('title', uploaded_file.name)}' successfully.")
+                st.session_state.upload_success_message = (
+                    f"Uploaded '{result.get('title', uploaded_file.name)}' successfully."
+                )
+                st.session_state.upload_key_suffix += 1
+
+                docs_ok, docs = api_client.get_documents()
+                if docs_ok:
+                    st.session_state.documents = docs
+                st.rerun()
+            else:
+                st.error(f"Upload failed: {result}")
+        uploaded_file = st.file_uploader(
+            "Choose a PDF or TXT file", type=["pdf", "txt"], key="upload_file_input"
+        )
+        document_type = st.selectbox("Document type", DOCUMENT_TYPES, key="upload_doc_type")
+        department = st.text_input("Department (optional)", key="upload_department")
+        if st.button("Upload", type="primary", use_container_width=True, key=f"upload_submit_{suffix}"):
+            if uploaded_file is None:
+                st.warning("Please choose a file first.")
+                return
+
+            with st.spinner("Uploading and processing document..."):
+                ok, result = api_client.upload_document(
+                    uploaded_file, document_type, department or None
+                )
+
+            if ok:
+                st.session_state.upload_success_message = f"Uploaded '{result.get('title', uploaded_file.name)}' successfully."
                 # Refresh the document list so the new upload shows up immediately
                 docs_ok, docs = api_client.get_documents()
                 if docs_ok:
@@ -126,7 +164,7 @@ def render_conversations_section():
                     {
                         "role": m.get("role"),
                         "content": m.get("content"),
-                        "citations": [],  # historical citations aren't returned by this endpoint
+                       "citations": m.get("citations", []),   # historical citations aren't returned by this endpoint
                     }
                     for m in data.get("messages", [])
                 ]

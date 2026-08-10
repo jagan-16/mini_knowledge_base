@@ -19,7 +19,6 @@ class ChunkRepository:
     def save_chunks(
         self,
         document_id: UUID,
-        metadata: UploadMetadata,
         chunks: list[ChunkData],
         embeddings: list[list[float]]
     ) -> None:
@@ -36,7 +35,6 @@ class ChunkRepository:
 
             db_chunk = Chunk(
                 document_id=document_id,
-                chunk_metadata={**asdict(metadata)},
                 chunk_hash=chunk.chunk_hash,
                 chunk_index=chunk.chunk_index,
                 chunk_text=chunk.chunk_text,

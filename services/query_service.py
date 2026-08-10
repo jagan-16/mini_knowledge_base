@@ -47,18 +47,27 @@ class QueryService:
 
         try:
 
+
+
             conversation_context = (
                 self.conversation_service.prepare_conversation(
                     request.conversation_id
                 )
             )
 
+            # --------------------------------
+            # 1. Generate query embedding
+            # --------------------------------
             query_embedding = (
                 self.embedding_service.generate_embedding(
                     request.question
                 )
             )
+            
 
+            # --------------------------------
+            # 2. Build retrieval filter
+            # --------------------------------
             retrieval_filter = RetrievalFilter(
 
                 top_k=request.top_k,
@@ -70,7 +79,11 @@ class QueryService:
                 department=request.department,
 
             )
-
+            
+            
+            # --------------------------------
+            # 3. Vector retrieval
+            # --------------------------------
             retrieved_chunks = (
                 self.retrieval_service.retrieve(
                     query_embedding=query_embedding,
@@ -84,6 +97,10 @@ class QueryService:
                     status_code=404,
                     detail="No relevant information found."
                 )
+                
+            # --------------------------------
+            # 4. Cross Encoder reranking
+            # --------------------------------
 
             reranked_chunks = (
                 self.reranking_service.rerank(
@@ -92,19 +109,79 @@ class QueryService:
                 )
             )
 
+
+            # --------------------------------
+            # 5. Build LLM prompt
+            # --------------------------------
             prompt = (
                 self.prompt_service.build_prompt(
                     question=request.question,
                     chunks=reranked_chunks,
                 )
             )
-
+            
+            # --------------------------------
+            # 6. Generate answer
+            # --------------------------------
             answer = (
                 self.llm_service.generate(
                     prompt=prompt,
                     history=conversation_context.history,
                 )
             )
+            
+            
+            
+            # --------------------------------
+            # 7. Build unique citations
+            # --------------------------------
+
+            seen = set()
+            
+            citations = []
+            
+            for chunk in reranked_chunks:
+            
+                                key = (
+                                    chunk.document_id,
+                                    chunk.page_number,
+                                )
+            
+                                if key in seen:
+                                    continue
+            
+                                seen.add(key)
+            
+                                citations.append(
+            
+                                    Citation(
+            
+                                        document_id=chunk.document_id,
+            
+                                        title=chunk.document_title,
+            
+                                        page_number=chunk.page_number,
+            
+                                        document_url=f"http://localhost:8000/uploads/{Path(chunk.file_path).name}#page={chunk.page_number}"
+            
+                                    )
+            
+                                )
+                                
+                                
+            # --------------------------------
+            # 8. Convert Pydantic citations
+            #    to JSON-compatible data
+            # --------------------------------
+            citation_data = [
+                            citation.model_dump(mode="json")
+                            for citation in citations
+                        ]
+            
+            
+            # --------------------------------
+            # 9. Persist conversation
+            # --------------------------------
 
             self.conversation_service.save_exchange(
 
@@ -114,42 +191,20 @@ class QueryService:
                 question=request.question,
 
                 answer=answer,
+                
+                citations=citation_data,
             )
+            
+            # --------------------------------
+            # 10. Commit everything
+            # --------------------------------
 
             self.db.commit()
             
-            seen = set()
-
-            citations = []
-
-            for chunk in reranked_chunks:
-
-                    key = (
-                        chunk.document_id,
-                        chunk.page_number,
-                    )
-
-                    if key in seen:
-                        continue
-
-                    seen.add(key)
-
-                    citations.append(
-
-                        Citation(
-
-                            document_id=chunk.document_id,
-
-                            title=chunk.document_title,
-
-                            page_number=chunk.page_number,
-
-                            document_url=f"http://localhost:8000/uploads/{Path(chunk.file_path).name}#page={chunk.page_number}"
-
-                        )
-
-                    )
-
+           
+            # --------------------------------
+            # 11. Return API response
+            # --------------------------------
 
             return QuestionResponse(
 

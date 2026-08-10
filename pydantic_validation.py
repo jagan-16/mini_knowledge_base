@@ -87,6 +87,9 @@ class MessageResponse(BaseModel):
     role: str
 
     content: str
+    
+    citations: list[Citation]  = Field(default_factory=list)
+    
 
     created_at: datetime
     

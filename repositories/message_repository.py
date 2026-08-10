@@ -18,12 +18,15 @@ class MessageRepository:
         conversation_id: UUID,
         role: str,
         content: str,
+        citations: list | None = None,
+        
     ) -> Message:
 
         message = Message(
             conversation_id=conversation_id,
             role=role,
             content=content,
+            citations=citations or [],
         )
 
         self.db.add(message)
@@ -35,7 +38,7 @@ class MessageRepository:
     def save_many(
         self,
         conversation_id: UUID,
-        messages: list[tuple[str, str]],
+        messages: list[tuple[str, str, list]],
     ) -> None:
 
         db_messages = [
@@ -44,9 +47,10 @@ class MessageRepository:
                 conversation_id=conversation_id,
                 role=role,
                 content=content,
+                citations=citations,
             )
 
-            for role, content in messages
+            for role, content, citations in messages
         ]
 
         self.db.add_all(

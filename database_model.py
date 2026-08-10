@@ -110,10 +110,7 @@ class Chunk(Base, TimestampMixin):
         nullable=False
     )
     
-    chunk_metadata = Column(
-    JSONB,
-    nullable=False,
-)
+
 
     embedding = Column(
         Vector(768),
@@ -177,6 +174,12 @@ class Message(Base ,TimestampMixin ):
         content     = Column(Text , 
                              nullable= False
                              )   
+        
+        citations = Column(JSONB, 
+                           nullable=False,
+                           default=list,
+                           )
+        
         
         conversation = relationship(
             "Conversation" ,

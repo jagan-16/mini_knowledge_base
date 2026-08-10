@@ -14,14 +14,48 @@ class RetrievalRepository:
         self.db = db
 
     def retrieve(
-        self,
-        query_embedding: list[float],
-        retrieval_filter: RetrievalFilter,
-    ) -> list[RetrievedChunk]:
+    self,
+    query_embedding: list[float],
+    retrieval_filter: RetrievalFilter,
+) -> list[RetrievedChunk]:
 
         distance = Chunk.embedding.cosine_distance(
             query_embedding
         )
+
+        # --------------------------------
+        # 1. Determine retrieval scope
+        # --------------------------------
+
+        filters = []
+
+        if retrieval_filter.document_id is not None:
+
+            # Single-document search
+            filters.append(
+                Chunk.document_id == retrieval_filter.document_id
+            )
+
+        else:
+
+            # Metadata / global search
+            if retrieval_filter.document_type is not None:
+
+                filters.append(
+                    Chunk.chunk_metadata["document_type"].astext
+                    == retrieval_filter.document_type
+                )
+
+            if retrieval_filter.department is not None:
+
+                filters.append(
+                    Chunk.chunk_metadata["department"].astext
+                    == retrieval_filter.department
+                )
+
+        # --------------------------------
+        # 2. Build query
+        # --------------------------------
 
         query = (
             self.db.query(
@@ -30,56 +64,29 @@ class RetrievalRepository:
                 distance.label("similarity_score"),
             )
             .join(Chunk.document)
-        )
-
-        # Highest priority: Search a single document
-        if retrieval_filter.document_id is not None:
-
-            query = query.filter(
-                Chunk.document_id == retrieval_filter.document_id
-            )
-
-        # Otherwise apply metadata filters
-        else:
-
-            if retrieval_filter.document_type is not None:
-
-                query = query.filter(
-                    Chunk.chunk_metadata["document_type"].astext
-                    == retrieval_filter.document_type
-                )
-
-            if retrieval_filter.department is not None:
-
-                query = query.filter(
-                    Chunk.chunk_metadata["department"].astext
-                    == retrieval_filter.department
-                )
-
-        results = (
-            query
+            .filter(*filters)
             .order_by(distance)
             .limit(retrieval_filter.top_k)
-            .all()
         )
 
+        # --------------------------------
+        # 3. Execute
+        # --------------------------------
+
+        results = query.all()
+
+        # --------------------------------
+        # 4. Convert DB rows to domain model
+        # --------------------------------
+
         return [
-
             RetrievedChunk(
-
                 document_id=document.id,
-
-                document_title = document.title,
-               
-                file_path = document.file_path,
-
+                document_title=document.title,
+                file_path=document.file_path,
                 page_number=chunk.page_number,
-
                 chunk_text=chunk.chunk_text,
-
-                similarity_score=float(distance),
-
+                similarity_score=float(similarity_score),
             )
-
-            for chunk, document, distance in results
+            for chunk, document, similarity_score in results
         ]

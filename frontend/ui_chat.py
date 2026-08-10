@@ -69,6 +69,8 @@ def handle_new_question(question: str):
         if ok:
             answer = result.get("answer", "")
             citations = result.get("citations", [])
+            
+        
             st.write(answer)
             render_citations(citations)
 

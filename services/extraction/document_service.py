@@ -87,7 +87,6 @@ class DocumentService:
                     # Step 7: Save chunks
                     self.chunk_repository.save_chunks(
                         document_id=document_id,
-                        metadata= metadata,
                         chunks=chunks,
                         embeddings=embeddings,
                     )
