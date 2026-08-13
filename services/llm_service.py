@@ -11,7 +11,7 @@ from internal_models.prompt_model import Prompt
 
 class LLMService:
 
-    MODEL_NAME = "llama-3.1-8b-instant"
+    MODEL_NAME = "llama-3.3-70b-versatile"
 
     MODEL_CONTEXT_WINDOW = 6000
 
@@ -55,7 +55,8 @@ class LLMService:
                 temperature=temperature,
 
                 max_tokens=self.OUTPUT_TOKEN_BUDGET,
-
+                
+               
             )
 
             return (
