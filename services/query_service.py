@@ -137,38 +137,43 @@ class QueryService:
             # --------------------------------
 
             seen = set()
-            
             citations = []
-            
+
             for chunk in reranked_chunks:
-            
-                                key = (
-                                    chunk.document_id,
-                                    chunk.page_number,
-                                )
-            
-                                if key in seen:
-                                    continue
-            
-                                seen.add(key)
-            
-                                citations.append(
-            
-                                    Citation(
-            
-                                        document_id=chunk.document_id,
-            
-                                        title=chunk.document_title,
-            
-                                        page_number=chunk.page_number,
-            
-                                        document_url=f"http://localhost:8000/uploads/{Path(chunk.file_path).name}#page={chunk.page_number}"
-            
-                                    )
-            
-                                )
-                                
-                                
+
+                    page_numbers = sorted(
+                        set(chunk.page_numbers)
+                    )
+
+                    key = (
+                        chunk.document_id,
+                        tuple(page_numbers),
+                    )
+
+                    if key in seen:
+                        continue
+
+                    seen.add(key)
+
+                    first_page = (
+                        page_numbers[0]
+                        if page_numbers
+                        else 1
+                    )
+
+                    citations.append(
+                        Citation(
+                            document_id=chunk.document_id,
+                            title=chunk.document_title,
+                            page_numbers=page_numbers,
+                            document_url=(
+                                f"http://localhost:8000/uploads/"
+                                f"{Path(chunk.file_path).name}"
+                                f"#page={first_page}"
+                            ),
+                        )
+                    )
+                                                
             # --------------------------------
             # 8. Convert Pydantic citations
             #    to JSON-compatible data

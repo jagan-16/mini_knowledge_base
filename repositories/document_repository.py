@@ -16,7 +16,7 @@ class DocumentRepository:
     def create_document(
         self,
         document_id: UUID,
-        extracted_document: ExtractedDocument,
+        title: str,
         stored_file: StoredFile,
         metadata : UploadMetadata
     ):
@@ -26,8 +26,8 @@ class DocumentRepository:
         document = Document(
             
             id = document_id,
-
-            title=extracted_document.title,
+            
+            title=title,
 
             file_name=stored_file.file_name,
             

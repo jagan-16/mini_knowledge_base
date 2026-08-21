@@ -1,33 +1,21 @@
-from fastapi import HTTPException
-
-from internal_models.extracted_document import ExtractedDocument
+from fastapi import HTTPException, UploadFile
 
 
 class DocumentValidator:
 
-    def validate(
+    def validate_file(
         self,
-        document: ExtractedDocument,
+        file: UploadFile,
     ) -> None:
 
-        if document.page_count == 0:
+        file.file.seek(0, 2)
 
+        file_size = file.file.tell()
+
+        file.file.seek(0)
+
+        if file_size == 0:
             raise HTTPException(
                 status_code=400,
-                detail="Document contains no pages."
-            )
-
-        has_text = any(
-
-            page.text.strip().replace("\x00", "")
-
-            for page in document.pages
-
-        )
-
-        if not has_text:
-
-            raise HTTPException(
-                status_code=400,
-                detail="No extractable text found."
+                detail="Uploaded file is empty.",
             )

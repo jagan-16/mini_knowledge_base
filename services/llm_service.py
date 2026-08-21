@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from groq import (
     APIStatusError,
-    Groq,
+    
 )
 from litellm import token_counter
 from services.model_loader import groq_client
@@ -11,7 +11,7 @@ from internal_models.prompt_model import Prompt
 
 class LLMService:
 
-    MODEL_NAME = "llama-3.3-70b-versatile"
+    MODEL_NAME = "openai/gpt-oss-20b"
 
     MODEL_CONTEXT_WINDOW = 6000
 

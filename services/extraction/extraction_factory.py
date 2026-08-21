@@ -1,5 +1,5 @@
 from services.extraction.txt_extractor import TXTExtractionService
-from services.extraction.pdf_extractor import PDFExtractionService
+from services.extraction.dockling_extraction import PDFExtractionService
 from fastapi import HTTPException
 
 class ExtractionFactory:

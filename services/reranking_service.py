@@ -4,6 +4,8 @@ from internal_models.retrieved_chunk import RetrievedChunk
 
 class RerankingService:
 
+
+    
     def __init__(self):
 
         self.model = reranker_model

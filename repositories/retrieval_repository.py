@@ -84,7 +84,7 @@ class RetrievalRepository:
                 document_id=document.id,
                 document_title=document.title,
                 file_path=document.file_path,
-                page_number=chunk.page_number,
+                page_numbers=chunk.page_numbers,
                 chunk_text=chunk.chunk_text,
                 similarity_score=float(similarity_score),
             )

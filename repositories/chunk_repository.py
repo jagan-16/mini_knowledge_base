@@ -39,7 +39,7 @@ class ChunkRepository:
                 chunk_index=chunk.chunk_index,
                 chunk_text=chunk.chunk_text,
                 embedding=embedding,
-                page_number=chunk.page_number,
+                page_numbers=chunk.page_numbers,
                 token_count=chunk.token_count
             )
 

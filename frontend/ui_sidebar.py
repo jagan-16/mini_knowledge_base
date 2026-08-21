@@ -54,30 +54,7 @@ def render_upload_section():
                 st.rerun()
             else:
                 st.error(f"Upload failed: {result}")
-        uploaded_file = st.file_uploader(
-            "Choose a PDF or TXT file", type=["pdf", "txt"], key="upload_file_input"
-        )
-        document_type = st.selectbox("Document type", DOCUMENT_TYPES, key="upload_doc_type")
-        department = st.text_input("Department (optional)", key="upload_department")
-        if st.button("Upload", type="primary", use_container_width=True, key=f"upload_submit_{suffix}"):
-            if uploaded_file is None:
-                st.warning("Please choose a file first.")
-                return
-
-            with st.spinner("Uploading and processing document..."):
-                ok, result = api_client.upload_document(
-                    uploaded_file, document_type, department or None
-                )
-
-            if ok:
-                st.session_state.upload_success_message = f"Uploaded '{result.get('title', uploaded_file.name)}' successfully."
-                # Refresh the document list so the new upload shows up immediately
-                docs_ok, docs = api_client.get_documents()
-                if docs_ok:
-                    st.session_state.documents = docs
-                st.rerun()
-            else:
-                st.error(f"Upload failed: {result}")
+        
 
 
 def render_documents_section():

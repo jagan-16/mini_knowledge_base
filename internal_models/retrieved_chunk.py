@@ -11,7 +11,7 @@ class RetrievedChunk:
 
     file_path: str
 
-    page_number: int
+    page_numbers: list[int]
 
     chunk_text: str
 

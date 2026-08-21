@@ -97,7 +97,7 @@ Use ONLY the following context to answer the user's question.
                 f"""
                     [Document {index}]
                     Title: {chunk.document_title}
-                    Page: {chunk.page_number}
+                    Page: {chunk.page_numbers}
 
                     {chunk.chunk_text}
                     

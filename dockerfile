@@ -5,6 +5,9 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     gcc \
+    libxcb1 \
+    libgl1 \
+    libglib2.0-0 \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 

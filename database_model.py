@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text , DateTime , BigInteger , Float
-from sqlalchemy.dialects.postgresql import UUID , JSONB
+from sqlalchemy.dialects.postgresql import UUID , JSONB ,ARRAY
 import uuid
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
@@ -117,10 +117,10 @@ class Chunk(Base, TimestampMixin):
         nullable=True
     )
 
-    page_number = Column(
-        Integer,
-        nullable=True
-    )
+    page_numbers = Column(
+    ARRAY(Integer),
+    nullable=False
+)
 
     token_count = Column(
         Integer,
