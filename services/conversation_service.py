@@ -102,6 +102,8 @@ class ConversationService:
                 conversation_id=conversation.id,
 
                 created_at=conversation.created_at,
+                
+                updated_at=conversation.updated_at,
 
             )
 
@@ -142,6 +144,7 @@ class ConversationService:
         content=message.content,
         citations = message.citations,
         created_at=message.created_at,
+        updated_at=message.updated_at,
     )
 
     for message in conversation.messages

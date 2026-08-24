@@ -73,11 +73,15 @@ class DocumentSummaryResponse(BaseModel):
 
     created_at: datetime
     
+    updated_at: datetime 
+    
 class ConversationSummaryResponse(BaseModel):
 
     conversation_id: UUID
 
     created_at: datetime
+    
+    updated_at: datetime
 
     
 class MessageResponse(BaseModel):
@@ -92,6 +96,8 @@ class MessageResponse(BaseModel):
     
 
     created_at: datetime
+    
+    updated_at: datetime
     
 class ConversationResponse(BaseModel):
 

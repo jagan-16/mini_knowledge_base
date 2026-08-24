@@ -95,8 +95,8 @@ def render_documents_section():
                 meta_bits.append(doc["department"])
             if meta_bits:
                 st.caption(" · ".join(meta_bits))
-            if doc.get("created_at"):
-                st.caption(format_timestamp(doc["created_at"]))
+            if doc.get("updated_at"):
+                st.caption(format_timestamp(doc["updated_at"]))
 
             if st.button(
                 "Query only this document" if not is_selected else "Selected",

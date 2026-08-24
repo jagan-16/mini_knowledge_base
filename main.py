@@ -102,6 +102,8 @@ def list_documents(
                 ),
 
                 created_at=document.created_at,
+                
+                updated_at=document.updated_at,
 
             )
 
