@@ -9,13 +9,12 @@ from services.extraction.embedding_service import EmbeddingService
 from repositories.document_repository import DocumentRepository
 from repositories.chunk_repository import ChunkRepository
 from internal_models.upload_data import UploadMetadata
-from  internal_models.extracted_document import ExtractedDocument
 from services.validation.document_validation import (
     DocumentValidator,
 )
 from pathlib import Path
 
-from fastapi import HTTPException
+
 
 class DocumentService:
 

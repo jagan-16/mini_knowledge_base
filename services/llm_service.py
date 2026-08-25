@@ -28,12 +28,15 @@ class LLMService:
     def __init__(self):
         self.client = groq_client
 
-    def generate(
-        self,
-        prompt: Prompt,
-        history: list[Message],
-        temperature: float = 0.2,
+    def complete(
+         self,
+    prompt: Prompt,
+    history: list[Message] | None = None,
+    temperature: float = 0.2,
+    response_format: dict | None = None,
     ) -> str:
+        
+        history = history or []
 
         messages = self._build_messages(
             prompt,
@@ -55,6 +58,8 @@ class LLMService:
                 temperature=temperature,
 
                 max_tokens=self.OUTPUT_TOKEN_BUDGET,
+                
+                response_format=response_format, 
                 
                
             )

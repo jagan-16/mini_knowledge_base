@@ -124,7 +124,7 @@ class QueryService:
             # 6. Generate answer
             # --------------------------------
             answer = (
-                self.llm_service.generate(
+                self.llm_service.complete(
                     prompt=prompt,
                     history=conversation_context.history,
                 )

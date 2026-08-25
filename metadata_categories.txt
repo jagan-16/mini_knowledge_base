@@ -1,0 +1,20 @@
+{
+  "departments-old": [
+    "Engineering",
+    "HR",
+    "Finance",
+    "Legal",
+    "Operations",
+    "Other"
+  ],
+  "document_types": [
+    "Technical Documentation",
+    "Policy",
+    "Financial Report",
+    "Resume",
+    "Legal Document",
+    "Book",
+    "Research Paper",
+    "Other"
+  ]
+}
