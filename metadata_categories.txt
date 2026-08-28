@@ -1,5 +1,5 @@
 {
-  "departments-old": [
+  "departments": [
     "Engineering",
     "HR",
     "Finance",
