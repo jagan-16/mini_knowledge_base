@@ -33,9 +33,7 @@ class QuestionRequest(BaseModel):
     
     document_id: UUID | None = None
     
-    document_type: str | None = None
-
-    department: str | None = None
+    metadata_filters : dict[str , str] | None = None
     
     @field_validator("question")
     @classmethod
@@ -62,18 +60,11 @@ class QuestionResponse(BaseModel):
     citations: List[Citation]
     
 class DocumentSummaryResponse(BaseModel):
-
     document_id: UUID
-
     title: str
-
-    document_type: str | None
-
-    department: str | None
-
+    metadata: dict[str, str]
     created_at: datetime
-    
-    updated_at: datetime 
+    updated_at: datetime
     
 class ConversationSummaryResponse(BaseModel):
 

@@ -1,10 +1,9 @@
 from uuid import UUID
 from internal_models.stored_file import StoredFile
 from sqlalchemy.orm import Session
-from internal_models.extracted_document import ExtractedDocument
 from database_model import Document
 from internal_models.upload_data import UploadMetadata
-from dataclasses import asdict
+
 
 
 class DocumentRepository:
@@ -21,7 +20,7 @@ class DocumentRepository:
         metadata : UploadMetadata
     ):
         
-        doc_metadata = {**asdict(metadata) }
+        
 
         document = Document(
             
@@ -38,7 +37,7 @@ class DocumentRepository:
 
             file_size=stored_file.file_size,
 
-            doc_metadata =  doc_metadata
+            doc_metadata =  metadata.document_data
 
             
         )
@@ -48,32 +47,15 @@ class DocumentRepository:
 
     def list_documents(
     self,
-    document_type: str | None = None,
-    department: str | None = None,
+    
 ) -> list[Document]:
 
-        query = self.db.query(Document)
+        query = (self.db.query(Document)
+                .order_by(Document.created_at.desc())
+                 .all()
+                )
+        return query
 
-        if document_type is not None:
+                
 
-            query = query.filter(
-                Document.doc_metadata["document_type"].astext
-                == document_type
-            )
-
-        if department is not None:
-
-            query = query.filter(
-                Document.doc_metadata["department"].astext
-                == department
-            )
-
-        return (
-            query
-            .order_by(Document.created_at.desc())
-            .all()
-        )
-
-        
-
-       
+            

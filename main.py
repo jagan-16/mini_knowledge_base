@@ -28,19 +28,14 @@ Base.metadata.create_all(bind=engine)
 @app.post("/upload", tags=["Document"] , summary = "upload the document to query")
 def upload(
     file: UploadFile = File(...),
-    document_type: str = Form(...),
-    department: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
 
     document_service = DocumentService(db)
     
-    metadata = UploadMetadata(
-    document_type=document_type,
-    department=department,
-)
 
-    return document_service.process_document(file = file , metadata = metadata
+
+    return document_service.process_document(file = file 
                                              )
 @app.post(
     "/query",
@@ -93,13 +88,7 @@ def list_documents(
 
                 title=document.title,
 
-                document_type=document.doc_metadata.get(
-                    "document_type"
-                ),
-
-                department=document.doc_metadata.get(
-                    "department"
-                ),
+                metadata = document.doc_metadata ,
 
                 created_at=document.created_at,
                 

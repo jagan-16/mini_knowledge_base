@@ -32,7 +32,7 @@ def render_upload_section():
             "Department (optional)", key=f"upload_department_{suffix}"
         )
 
-        if st.button("Upload", type="primary", use_container_width=True):
+        if st.button("Upload", type="primary", use_container_width=True, key=f"upload_submit_{suffix}"):
             if uploaded_file is None:
                 st.warning("Please choose a file first.")
                 return
@@ -54,7 +54,6 @@ def render_upload_section():
                 st.rerun()
             else:
                 st.error(f"Upload failed: {result}")
-        
 
 
 def render_documents_section():
@@ -66,16 +65,15 @@ def render_documents_section():
         st.sidebar.caption("No documents uploaded yet.")
         return
 
-    if st.session_state.selected_document_type is not None:
-        st.sidebar.info(
-            f"Filtering by document type: {st.session_state.selected_document_type}"
+    # Generic filter summary, built from whatever is currently selected —
+    # no hardcoded field names, works for any metadata field.
+    if st.session_state.selected_metadata_filters:
+        filter_text = ", ".join(
+            f"{field.replace('_', ' ').title()} = {value}"
+            for field, value in st.session_state.selected_metadata_filters.items()
         )
+        st.sidebar.info(f"Filtering by: {filter_text}")
 
-    if st.session_state.selected_department is not None:
-        st.sidebar.info(
-            f"Filtering by department: {st.session_state.selected_department}"
-        )
-        
     if st.session_state.selected_document_id:
         if st.sidebar.button("✕ Clear document selection", use_container_width=True):
             st.session_state.selected_document_id = None
@@ -88,13 +86,14 @@ def render_documents_section():
 
         with st.sidebar.container(border=True):
             st.markdown(f"**{label}**")
-            meta_bits = []
-            if doc.get("document_type"):
-                meta_bits.append(doc["document_type"])
-            if doc.get("department"):
-                meta_bits.append(doc["department"])
-            if meta_bits:
-                st.caption(" · ".join(meta_bits))
+
+            # Display every metadata field the backend returned for this
+            # document, whatever fields those happen to be.
+            metadata = doc.get("metadata") or {}
+            if metadata:
+                meta_text = " · ".join(f"{key}: {value}" for key, value in metadata.items())
+                st.caption(meta_text)
+
             if doc.get("updated_at"):
                 st.caption(format_timestamp(doc["updated_at"]))
 
@@ -141,7 +140,7 @@ def render_conversations_section():
                     {
                         "role": m.get("role"),
                         "content": m.get("content"),
-                       "citations": m.get("citations", []),   # historical citations aren't returned by this endpoint
+                        "citations": m.get("citations", []),
                     }
                     for m in data.get("messages", [])
                 ]

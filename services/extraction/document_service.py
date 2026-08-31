@@ -8,10 +8,17 @@ from services.extraction.dockling_chuncking_service import ChunkingService
 from services.extraction.embedding_service import EmbeddingService
 from repositories.document_repository import DocumentRepository
 from repositories.chunk_repository import ChunkRepository
-from internal_models.upload_data import UploadMetadata
+from services.metadata_services.metadata_content_service import MetadataContentService
+from services.metadata_services.metadata_config_service import MetadataConfigService
+from services.metadata_services.metadata_schema_service import MetadataSchemaService
+from services.metadata_services.metadata_prompt import MetadataPromptService
+from services.llm_service import LLMService
+
+
 from services.validation.document_validation import (
     DocumentValidator,
 )
+from services.metadata_services.metadata_classification import MetadataClassificationService
 from pathlib import Path
 
 
@@ -45,13 +52,19 @@ class DocumentService:
         
         self.file_storage_service = FileStorageService()
         self.extraction_service = ExtractionService()
+        self.metadata_classification = MetadataClassificationService(         
+                content_service=MetadataContentService(),
+                category_service=MetadataConfigService(),
+                schema_service=MetadataSchemaService(),
+                prompt_service=MetadataPromptService(),
+                 llm_service=LLMService())
         self.chunking_service = ChunkingService()
         self.embedding_service = EmbeddingService()
 
     def process_document(
         self,
         file: UploadFile,
-        metadata: UploadMetadata
+       
         
     ):
         
@@ -69,17 +82,25 @@ class DocumentService:
 
                         file= file,
                     )
+                    
                     # Step 2: Extract PDF
                     extracted_document = self.extraction_service.extract(file)
 
                 
+                    metadata = self.metadata_classification.classify(
+                        
+                        document= extracted_document
+                    )
+                    
+                    print(metadata.document_data)
+
 
                     # Step 3: Save document
                     self.document_repository.create_document(
                         document_id=document_id,
                         title = self.generate_document_title(file.filename),
                         stored_file=stored_file,
-                        metadata=metadata,
+                        metadata= metadata
                         
                     )
 

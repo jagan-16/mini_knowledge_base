@@ -18,6 +18,7 @@ def render_welcome_screen():
     st.title("Mini Knowledge Base")
     st.write("Upload a document from the sidebar, then ask a question about it below.")
 
+
 def render_citations(citations: list):
     if not citations:
         return
@@ -32,6 +33,7 @@ def render_citations(citations: list):
                 st.markdown(f"- [**{title}**]({url}){page_text}")
             else:
                 st.markdown(f"- **{title}**{page_text}")  # fallback if no URL available
+
 
 def render_message_history():
     for message in st.session_state.messages:
@@ -51,26 +53,17 @@ def handle_new_question(question: str):
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             ok, result = api_client.post_query(
-
                 question=question,
-
                 conversation_id=st.session_state.current_conversation_id,
-
                 document_id=st.session_state.selected_document_id,
-
-                document_type=st.session_state.selected_document_type,
-
-                department=st.session_state.selected_department,
-
+                metadata_filters=st.session_state.selected_metadata_filters,
                 top_k=TOP_K_DEFAULT,
-
             )
 
         if ok:
             answer = result.get("answer", "")
             citations = result.get("citations", [])
-            
-        
+
             st.write(answer)
             render_citations(citations)
 

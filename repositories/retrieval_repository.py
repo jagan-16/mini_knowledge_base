@@ -37,21 +37,15 @@ class RetrievalRepository:
             )
 
         else:
+            
+            if retrieval_filter.metadata_filters:
 
-            # Metadata / global search
-            if retrieval_filter.document_type is not None:
+           
+                for key, value in retrieval_filter.metadata_filters.items():
 
-                filters.append(
-                    Chunk.chunk_metadata["document_type"].astext
-                    == retrieval_filter.document_type
-                )
-
-            if retrieval_filter.department is not None:
-
-                filters.append(
-                    Chunk.chunk_metadata["department"].astext
-                    == retrieval_filter.department
-                )
+                    filters.append(
+                        Document.doc_metadata[key].astext == value
+                    )
 
         # --------------------------------
         # 2. Build query

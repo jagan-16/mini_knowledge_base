@@ -74,9 +74,7 @@ class QueryService:
 
                 document_id=request.document_id,
 
-                document_type=request.document_type,
-
-                department=request.department,
+                metadata_filters = request.metadata_filters
 
             )
             

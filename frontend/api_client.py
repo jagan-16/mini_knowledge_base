@@ -68,7 +68,7 @@ def upload_document(file, document_type: str, department: str | None = None):
 
 
 def get_documents():
-    """GET /documents — list all uploaded documents."""
+    """GET /documents — list all uploaded documents, each with a nested 'metadata' dict."""
     return _safe_request("GET", f"{BASE_URL}/documents", timeout=REQUEST_TIMEOUT)
 
 
@@ -77,19 +77,23 @@ def post_query(
     conversation_id: str | None = None,
     document_id: str | None = None,
     top_k: int = 5,
-    document_type: str | None = None,
-    department: str | None = None,
+    metadata_filters: dict | None = None,
 ):
-    """POST /query — ask a question against the knowledge base."""
+    """
+    POST /query — ask a question against the knowledge base.
+
+    metadata_filters is a generic dict, e.g. {"department": "Engineering"}
+    or {"department": "Engineering", "language": "English"} — the backend's
+    retrieval repository applies these dynamically against document
+    metadata, so the frontend never needs to know field names in advance.
+    """
     payload = {"question": question, "top_k": top_k}
     if conversation_id:
         payload["conversation_id"] = conversation_id
     if document_id:
         payload["document_id"] = document_id
-    if document_type:
-        payload["document_type"] = document_type
-    if department:
-        payload["department"] = department
+    if metadata_filters:
+        payload["metadata_filters"] = metadata_filters
 
     return _safe_request(
         "POST",
