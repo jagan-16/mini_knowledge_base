@@ -7,15 +7,18 @@ documents and conversation history — session_state here just holds
 what's needed to render the current page without refetching everything
 on every rerun.
 
-Metadata filtering uses an explicit "add filter" pattern rather than
-always-visible per-field dropdowns. Only filters the user has actually
-added appear at all, each as a removable chip — there's no ambiguous
-"All" dropdown sitting there that might be mistaken for an active
-constraint. Field discovery itself remains fully dynamic: nothing is
-hardcoded to specific field names like "department" or "language".
+Search is organized into three mutually exclusive, explicitly chosen
+scopes: Entire Knowledge Base, Single Document, and Metadata Filters.
+Choosing one scope disables the others rather than letting the user
+accidentally combine document selection with metadata filters in a way
+the backend doesn't support (it treats document_id and metadata_filters
+as mutually exclusive). Within "Metadata Filters" scope, any number of
+fields can be added simultaneously as an AND-combined filter.
 """
 
 import streamlit as st
+
+SEARCH_SCOPES = ["Entire Knowledge Base", "Single Document", "Metadata Filters"]
 
 
 def init_session_state():
@@ -23,6 +26,7 @@ def init_session_state():
     defaults = {
         "documents": [],              # list of document dicts from GET /documents
         "conversations": [],          # list of conversation dicts from GET /conversations
+        "search_scope": SEARCH_SCOPES[0],
         "selected_metadata_filters": {},  # generic {field: value} dict, built dynamically
         "current_conversation_id": None,
         "selected_document_id": None,
@@ -59,8 +63,7 @@ def _values_for_field(doc: dict, field: str) -> list:
     """
     Return whatever value(s) a document has for a metadata field, as a
     list, regardless of whether the underlying value is a single string
-    or a list of strings (a document tagged with multiple departments,
-    for example). Never raises on unexpected shapes.
+    or a list of strings. Never raises on unexpected shapes.
     """
     raw = (doc.get("metadata") or {}).get(field)
     if raw is None:
@@ -70,38 +73,9 @@ def _values_for_field(doc: dict, field: str) -> list:
     return [raw]
 
 
-def render_search_filters():
-    """
-    Renders active metadata filters as removable chips, plus an
-    "+ Add filter" control to add more. Nothing is ever shown as filtered
-    unless the user explicitly added it — there is no default-"All"
-    dropdown that could be mistaken for an active constraint.
-
-    Semantics (unchanged from before, just the UI changed):
-      - No chips  -> search the entire knowledge base.
-      - One chip  -> filter by that single field.
-      - Multiple chips -> AND all of them together.
-
-    Metadata filtering and single-document selection remain mutually
-    exclusive on the backend, so this section disables itself whenever a
-    specific document is currently selected.
-    """
-    st.sidebar.markdown("### 🔍 Search Filters")
-
-    if st.session_state.selected_document_id:
-        st.sidebar.caption(
-            "A single document is selected below — metadata filters are "
-            "disabled while a specific document is active. Clear the "
-            "document selection to filter by metadata instead."
-        )
-        st.session_state.selected_metadata_filters = {}
-        return
-
+def _render_metadata_filter_controls():
+    """Chip-based add/remove UI for metadata filters, shown only in 'Metadata Filters' scope."""
     documents = st.session_state.documents
-
-    if not documents:
-        st.sidebar.caption("Upload documents to enable filters.")
-        return
 
     metadata_fields = sorted({
         key
@@ -116,9 +90,6 @@ def render_search_filters():
     field_labels = {field: field.replace("_", " ").title() for field in metadata_fields}
     active_filters = st.session_state.selected_metadata_filters
 
-    # ------------------------------------------------------------
-    # Active filters, shown only if they exist -- as removable chips
-    # ------------------------------------------------------------
     if active_filters:
         for field, value in list(active_filters.items()):
             chip_col, remove_col = st.sidebar.columns([5, 1])
@@ -131,11 +102,8 @@ def render_search_filters():
             st.session_state.selected_metadata_filters = {}
             st.rerun()
     else:
-        st.sidebar.caption("No filters applied — searching the entire knowledge base.")
+        st.sidebar.caption("No filters added yet.")
 
-    # ------------------------------------------------------------
-    # Add a new filter -- only fields not already filtered are offered
-    # ------------------------------------------------------------
     available_fields = [f for f in metadata_fields if f not in active_filters]
 
     if not available_fields:
@@ -167,3 +135,47 @@ def render_search_filters():
             st.session_state.selected_metadata_filters[field_to_add] = value_to_add
             st.session_state.add_filter_key_suffix += 1
             st.rerun()
+
+
+def render_search_filters():
+    """
+    Renders the top-level search scope selector, and whatever controls
+    are relevant to the chosen scope. This is the single guided entry
+    point for how the user restricts their search:
+
+        Entire Knowledge Base -> no restriction at all
+        Single Document       -> restrict to one document, selected in
+                                  the Documents section below (only
+                                  enabled while this scope is active)
+        Metadata Filters      -> restrict by one or more metadata fields
+                                  simultaneously (AND-combined)
+
+    Switching scope always clears whatever the other scopes had set, so
+    there's never a stale document_id lingering under Metadata Filters
+    scope or vice versa.
+    """
+    st.sidebar.markdown("### 🔍 Search Scope")
+
+    documents = st.session_state.documents
+    if not documents:
+        st.sidebar.caption("Upload documents to enable search scoping.")
+        return
+
+    scope = st.sidebar.radio("Choose how to search", SEARCH_SCOPES, key="search_scope")
+
+    if scope == "Entire Knowledge Base":
+        st.session_state.selected_document_id = None
+        st.session_state.selected_metadata_filters = {}
+        st.sidebar.caption("Searching the entire knowledge base.")
+
+    elif scope == "Single Document":
+        st.session_state.selected_metadata_filters = {}
+        st.sidebar.caption(
+            "Select a document under 'Documents' below to search only that document."
+        )
+        # Actual document selection happens in ui_sidebar.render_documents_section(),
+        # which checks st.session_state.search_scope before enabling its button.
+
+    elif scope == "Metadata Filters":
+        st.session_state.selected_document_id = None
+        _render_metadata_filter_controls()

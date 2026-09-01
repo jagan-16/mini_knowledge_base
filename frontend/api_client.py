@@ -51,18 +51,22 @@ def _safe_request(method, url, **kwargs):
         return False, f"Request failed: {e}"
 
 
-def upload_document(file, document_type: str, department: str | None = None):
-    """POST /upload — multipart file upload."""
+def upload_document(file):
+    """
+    POST /upload — multipart file upload.
+
+    No department/document_type is sent — the backend classifies both
+    automatically via its metadata classification pipeline (Docling
+    extraction -> MetadataContentService -> LLM classification) once the
+    file is received, so the frontend has nothing to supply beyond the
+    file itself.
+    """
     files = {"file": (file.name, file.getvalue(), file.type)}
-    data = {"document_type": document_type}
-    if department:
-        data["department"] = department
 
     return _safe_request(
         "POST",
         f"{BASE_URL}/upload",
         files=files,
-        data=data,
         timeout=UPLOAD_TIMEOUT,
     )
 
