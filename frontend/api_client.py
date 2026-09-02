@@ -86,10 +86,11 @@ def post_query(
     """
     POST /query — ask a question against the knowledge base.
 
-    metadata_filters is a generic dict, e.g. {"department": "Engineering"}
-    or {"department": "Engineering", "language": "English"} — the backend's
-    retrieval repository applies these dynamically against document
-    metadata, so the frontend never needs to know field names in advance.
+    metadata_filters is the backend's operator-tree payload. A simple group looks
+    like {"operator": "and", "conditions": [{...}, {...}]}; multiple groups
+    can be combined by an outer AND/OR operator. The frontend never needs to
+    know field names in advance because metadata fields are discovered from
+    the documents returned by GET /documents.
     """
     payload = {"question": question, "top_k": top_k}
     if conversation_id:

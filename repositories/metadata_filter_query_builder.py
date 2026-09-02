@@ -30,8 +30,8 @@ class MetadataFilterQueryBuilder:
             "in": self._build_in,
             "not_in": self._build_not_in,
             "gt": self._build_gt ,
-            "lt" : self.build_lt ,
-            "gte" : self.build_gte,
+            "lt" : self._build_lt ,
+            "gte" : self._build_gte,
             "lte" : self._build_lte
         }
 
