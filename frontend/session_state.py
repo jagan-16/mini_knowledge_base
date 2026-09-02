@@ -138,23 +138,6 @@ def _values_for_field(doc: dict, field: str) -> list:
     return [raw]
 
 
-def _coerce_comparison_value(value: str, sample_values: list[Any]) -> Any:
-    """Keep ordinary metadata strings intact, but preserve obvious numeric input as numbers."""
-    text = value.strip()
-    if not text:
-        return text
-
-    numeric_samples = [v for v in sample_values if isinstance(v, (int, float)) and not isinstance(v, bool)]
-    if numeric_samples:
-        try:
-            number = float(text)
-            return int(number) if number.is_integer() else number
-        except ValueError:
-            return text
-
-    return text
-
-
 def build_metadata_filter_payload() -> dict | None:
     """Compile the UI state into the backend's two-level operator tree."""
     groups = st.session_state.get("metadata_filter_groups", [])
@@ -257,6 +240,10 @@ def _render_add_condition(group_index: int, documents: list[dict], metadata_fiel
             key=f"add_condition_operator_{group_index}_{suffix}",
         )
 
+        if not possible_values:
+            st.warning(f"No values are available for {field_labels[field_to_add]}.")
+            return
+
         if operator in MULTI_VALUE_OPERATORS:
             value_to_add = st.multiselect(
                 "Values",
@@ -265,24 +252,15 @@ def _render_add_condition(group_index: int, documents: list[dict], metadata_fiel
                 key=f"add_condition_value_multi_{group_index}_{suffix}",
             )
             can_add = bool(value_to_add)
-        elif operator in COMPARISON_OPERATORS:
-            placeholder = "e.g. 10, 2026-01-01, or another comparable value"
-            raw_value = st.text_input(
-                "Value",
-                placeholder=placeholder,
-                key=f"add_condition_value_compare_{group_index}_{suffix}",
-            )
-            value_to_add = _coerce_comparison_value(raw_value, possible_values)
-            can_add = bool(raw_value.strip())
         else:
-            if not possible_values:
-                st.warning(f"No values are available for {field_labels[field_to_add]}.")
-                return
+            # All single-value operators, including <, >, <= and >=, use
+            # metadata values fetched from the database. No free-text
+            # threshold is accepted by the frontend.
             value_to_add = st.selectbox(
                 "Value",
                 possible_values,
                 format_func=str,
-                key=f"add_condition_value_single_{group_index}_{suffix}",
+                key=f"add_condition_value_single_{operator}_{group_index}_{suffix}",
             )
             can_add = True
 
