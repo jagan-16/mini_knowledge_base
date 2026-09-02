@@ -1,8 +1,13 @@
 from sqlalchemy.orm import Session
 
 from database_model import Chunk, Document
+
 from internal_models.retrieval_filter import RetrievalFilter
 from internal_models.retrieved_chunk import RetrievedChunk
+
+from repositories.metadata_filter_query_builder import (
+    MetadataFilterQueryBuilder,
+)
 
 
 class RetrievalRepository:
@@ -13,64 +18,80 @@ class RetrievalRepository:
     ):
         self.db = db
 
+        self.metadata_filter_query_builder = (
+            MetadataFilterQueryBuilder()
+        )
+
     def retrieve(
-    self,
-    query_embedding: list[float],
-    retrieval_filter: RetrievalFilter,
-) -> list[RetrievedChunk]:
+        self,
+        query_embedding: list[float],
+        retrieval_filter: RetrievalFilter,
+    ) -> list[RetrievedChunk]:
 
         distance = Chunk.embedding.cosine_distance(
             query_embedding
         )
 
-        # --------------------------------
-        # 1. Determine retrieval scope
-        # --------------------------------
-
         filters = []
+
+        # --------------------------------
+        # 1. Document scope
+        # --------------------------------
 
         if retrieval_filter.document_id is not None:
 
-            # Single-document search
             filters.append(
-                Chunk.document_id == retrieval_filter.document_id
+                Chunk.document_id
+                == retrieval_filter.document_id
             )
 
-        else:
-            
-            if retrieval_filter.metadata_filters:
+        # --------------------------------
+        # 2. Metadata scope
+        # --------------------------------
 
-           
-                for key, value in retrieval_filter.metadata_filters.items():
+        elif retrieval_filter.metadata_filters:
 
-                    filters.append(
-                        Document.doc_metadata[key].astext == value
-                    )
+            metadata_expression = (
+                self.metadata_filter_query_builder.build(
+                    retrieval_filter.metadata_filters
+                )
+            )
+
+            if metadata_expression is not None:
+
+                filters.append(
+                    metadata_expression
+                )
 
         # --------------------------------
-        # 2. Build query
+        # 3. Retrieval query
         # --------------------------------
 
         query = (
             self.db.query(
                 Chunk,
                 Document,
-                distance.label("similarity_score"),
+                distance.label(
+                    "similarity_score"
+                ),
             )
             .join(Chunk.document)
             .filter(*filters)
             .order_by(distance)
-            .limit(retrieval_filter.top_k)
+            .limit(
+                retrieval_filter.top_k
+            )
         )
 
         # --------------------------------
-        # 3. Execute
+        # 4. Execute
         # --------------------------------
 
         results = query.all()
 
         # --------------------------------
-        # 4. Convert DB rows to domain model
+        # 5. Convert database rows
+        #    into RetrievedChunk
         # --------------------------------
 
         return [
@@ -80,7 +101,13 @@ class RetrievalRepository:
                 file_path=document.file_path,
                 page_numbers=chunk.page_numbers,
                 chunk_text=chunk.chunk_text,
-                similarity_score=float(similarity_score),
+                similarity_score=float(
+                    similarity_score
+                ),
             )
-            for chunk, document, similarity_score in results
+            for (
+                chunk,
+                document,
+                similarity_score,
+            ) in results
         ]

@@ -1,7 +1,22 @@
+from __future__ import annotations
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel , Field , field_validator
-from typing import List
+from typing import List , Literal
+
+
+
+class MetadataConditionRequest(BaseModel):
+    field: str
+    operator: Literal["eq", "neq", "in", "not_in" , "gt" , "lt" , "gte" , "lte"]
+    value: str | list[str]
+
+
+class MetadataFilterGroupRequest(BaseModel):
+    operator: Literal["and", "or"]
+    conditions: list[
+        MetadataConditionRequest | MetadataFilterGroupRequest
+    ]
 
 class UploadResponse(BaseModel):
     document_id: UUID
@@ -33,7 +48,7 @@ class QuestionRequest(BaseModel):
     
     document_id: UUID | None = None
     
-    metadata_filters : dict[str , str] | None = None
+    metadata_filters: MetadataFilterGroupRequest | None = None
     
     @field_validator("question")
     @classmethod
@@ -95,3 +110,6 @@ class ConversationResponse(BaseModel):
     conversation_id: UUID
 
     messages: list[MessageResponse]
+    
+
+

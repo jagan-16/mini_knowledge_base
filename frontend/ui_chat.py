@@ -11,7 +11,7 @@ import streamlit as st
 
 import api_client
 from config import TOP_K_DEFAULT
-from session_state import append_message
+from session_state import append_message, build_metadata_filter_payload
 
 
 def render_welcome_screen():
@@ -56,7 +56,7 @@ def handle_new_question(question: str):
                 question=question,
                 conversation_id=st.session_state.current_conversation_id,
                 document_id=st.session_state.selected_document_id,
-                metadata_filters=st.session_state.selected_metadata_filters,
+                metadata_filters=build_metadata_filter_payload(),
                 top_k=TOP_K_DEFAULT,
             )
 

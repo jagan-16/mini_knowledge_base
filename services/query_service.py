@@ -1,4 +1,6 @@
+
 from fastapi import HTTPException
+from metadata_filter_mapper import MetadataFilterMapper
 from sqlalchemy.orm import Session
 from pathlib import Path
 
@@ -38,6 +40,8 @@ class QueryService:
 
         self.llm_service = LLMService()
 
+        self.metadata_filter_mapper = MetadataFilterMapper()
+        
         self.conversation_service = ConversationService(db)
 
     def ask(
@@ -68,14 +72,17 @@ class QueryService:
             # --------------------------------
             # 2. Build retrieval filter
             # --------------------------------
+            metadata_filters = None
+
+            if request.metadata_filters is not None:
+                metadata_filters = self.metadata_filter_mapper.to_internal(
+                    request.metadata_filters
+                )
+
             retrieval_filter = RetrievalFilter(
-
                 top_k=request.top_k,
-
                 document_id=request.document_id,
-
-                metadata_filters = request.metadata_filters
-
+                metadata_filters=metadata_filters,
             )
             
             
