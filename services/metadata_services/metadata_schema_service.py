@@ -1,11 +1,16 @@
+from services.metadata_services.metadata_config_service import MetadataConfigService
+
 class MetadataSchemaService:
 
     def build_output_structure(
         self,
-        categories: dict[str, list[str]],
+        categories: dict[str, dict ],
     ) -> dict[str, str]:
 
         return {
             field: "<selected value>"
-            for field in categories
+            for field in categories["fields"]
         }
+load = MetadataConfigService()
+catagories = load.get_categories()
+print(MetadataSchemaService().build_output_structure(catagories))

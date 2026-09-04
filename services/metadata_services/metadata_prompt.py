@@ -1,5 +1,5 @@
-from pathlib import Path
 import json
+from typing import Any
 from internal_models.prompt_model import Prompt
 
 
@@ -22,15 +22,23 @@ class MetadataPromptService:
                     to be classified.
 
                     Classification rules:
+                        For fields that define allowed_values:
+                            - For each field defined in the allowed categories, select exactly one
+                            value from that field's list.
+                            - The selected values must exactly match the values provided
+                            in the allowed categories.
+                            - Do not create new categories.
+                            - Do not modify category names.
+                            - Do not add additional classification fields beyond those defined.
+                            
+                            - Select exactly one value from allowed_values.
+                            - The selected value must exactly match one of the allowed values.
 
-                    - For each field defined in the allowed categories, select exactly one
-                      value from that field's list.
-                    - The selected values must exactly match the values provided
-                      in the allowed categories.
-                    - Do not create new categories.
-                    - Do not modify category names.
-                    - Do not add additional classification fields beyond those defined.
-                    
+                        For fields with type "integer":
+                        - Return an integer when the value is explicitly stated or can be reliably identified.
+                        - Do not invent a value.
+                        - Return null when the value is not available.
+                                        
                     
                     Handling ambiguity — apply these rules independently to each field:
 
@@ -80,7 +88,7 @@ class MetadataPromptService:
     def build_prompt(
         self,
         document_text: str,
-        categories: dict[str, list[str]],
+        categories: dict[str, Any],
         output_structure: dict[str, str],
 
     ) -> Prompt:

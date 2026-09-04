@@ -2,14 +2,14 @@ from __future__ import annotations
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel , Field , field_validator
-from typing import List , Literal
+from typing import List , Literal , Any
 
 
 
 class MetadataConditionRequest(BaseModel):
     field: str
     operator: Literal["eq", "neq", "in", "not_in" , "gt" , "lt" , "gte" , "lte"]
-    value: str | list[str]
+    value: str | int | float | list[str]
 
 
 class MetadataFilterGroupRequest(BaseModel):
@@ -77,7 +77,7 @@ class QuestionResponse(BaseModel):
 class DocumentSummaryResponse(BaseModel):
     document_id: UUID
     title: str
-    metadata: dict[str, str]
+    metadata: dict[str, Any]
     created_at: datetime
     updated_at: datetime
     

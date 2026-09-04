@@ -7,6 +7,7 @@ from litellm import token_counter
 from services.model_loader import groq_client
 from database_model import Message
 from internal_models.prompt_model import Prompt
+import logging
 
 
 class LLMService:
@@ -36,6 +37,7 @@ class LLMService:
     response_format: dict | None = None,
     ) -> str:
         
+        logger = logging.getLogger(__name__)
         history = history or []
 
         messages = self._build_messages(
@@ -63,7 +65,7 @@ class LLMService:
                 
                
             )
-
+            
             return (
                 response
                 .choices[0]
@@ -72,6 +74,12 @@ class LLMService:
             )
 
         except APIStatusError as exc:
+            
+            logger.exception(
+                "Groq API error. status=%s, response=%s",
+                exc.status_code,
+                exc,
+            )
 
             if exc.status_code == 413:
 

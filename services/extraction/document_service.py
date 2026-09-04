@@ -1,4 +1,5 @@
 from uuid import uuid4
+from venv import logger
 from internal_models import extracted_document
 from services.extraction.file_storage_service import FileStorageService
 from fastapi import UploadFile
@@ -13,6 +14,7 @@ from services.metadata_services.metadata_config_service import MetadataConfigSer
 from services.metadata_services.metadata_schema_service import MetadataSchemaService
 from services.metadata_services.metadata_prompt import MetadataPromptService
 from services.llm_service import LLMService
+import logging
 
 
 from services.validation.document_validation import (
@@ -24,7 +26,6 @@ from pathlib import Path
 
 
 class DocumentService:
-
 
 
 
@@ -68,6 +69,9 @@ class DocumentService:
         
     ):
         
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.INFO)
+        
         self.document_validator.validate_file(file)
 
         document_id = uuid4()
@@ -86,13 +90,15 @@ class DocumentService:
                     # Step 2: Extract PDF
                     extracted_document = self.extraction_service.extract(file)
 
-                
+                    logger.info("Docling extraction completed")
+                    
                     metadata = self.metadata_classification.classify(
                         
                         document= extracted_document
                     )
                     
-                    print(metadata.document_data)
+                    logger.info("Metadata classification completed")
+                    
 
 
                     # Step 3: Save document
@@ -103,17 +109,25 @@ class DocumentService:
                         metadata= metadata
                         
                     )
+                    
+                    logger.info("Starting chunking")
 
                     # Step 4: Create chunks
                     chunks = self.chunking_service.chunk_document(
                         extracted_document
                     )
+                    
+                    logger.info("Chunking completed: %d chunks", len(chunks))
+                    
+                    logger.info("Starting embeddings")
 
                     # Step 5: Generate embeddings
                     embeddings = self.embedding_service.generate_embeddings(
                         chunks
                     )
-
+                    
+                    logger.info("Embeddings completed")
+ 
                     # Step 6: Save chunks
                     self.chunk_repository.save_chunks(
                         document_id=document_id,
@@ -129,14 +143,14 @@ class DocumentService:
                             "message": "Upload successful"
                         }
         except Exception:
+            logger.exception("Document processing failed")
 
             self.db.rollback()
-            
-            if stored_file is not None:
 
-                    self.file_storage_service.delete_file(
-                        stored_file.file_path
-                    )
+            if stored_file is not None:
+                self.file_storage_service.delete_file(
+                    stored_file.file_path
+                )
 
             raise
 

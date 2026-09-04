@@ -45,7 +45,7 @@ class MetadataClassificationService:
 
         # 2. Load classification configuration
         categories = self.category_service.get_categories()
-
+       
         # 3. Build the dynamic output structure
         output_structure = (
             self.schema_service.build_output_structure(

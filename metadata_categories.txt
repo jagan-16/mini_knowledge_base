@@ -1,23 +1,38 @@
 {
-  "departments": [
-    "Engineering",
-    "HR",
-    "Finance",
-    "Legal",
-    "Operations",
-    "Other"
-  ],
-  "document_types": [
-    "Technical Documentation",
-    "Policy",
-    "Financial Report",
-    "Resume",
-    "Legal Document",
-    "Book",
-    "Research Paper",
-    "Other"
-  ]
-  "Document_year":[
-    
-  ]
+  "fields": {
+    "department": {
+      "type": "string",
+      "description": "The primary department associated with the document.",
+      "allowed_values": [
+        "Engineering",
+        "HR",
+        "Finance",
+        "Legal",
+        "Operations",
+        "Other"
+      ]
+    },
+    "document_type": {
+      "type": "string",
+      "description": "The primary type of the document.",
+      "allowed_values": [
+        "Technical Documentation",
+        "Policy",
+        "Financial Report",
+        "Resume",
+        "Legal Document",
+        "Book",
+        "Research Paper",
+        "Other"
+      ]
+    },
+    "published_year": {
+      "type": "integer",
+      "description": "The year the document was published, issued, released, or created."
+    },
+    "document_version": {
+      "type": "number",
+      "description":  "The version identifier of the document, if explicitly stated. If the version is mentioned as v1 or version 1, drop the prefix and store only the integer."
+    }
+  }
 }

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-
+from typing import Any
 
 class MetadataConfigService:
 
@@ -12,7 +12,7 @@ class MetadataConfigService:
 
     def get_categories(
         self,
-    ) -> dict[str, list[str]]:
+    ) -> dict[str, Any]:
 
         try:
 
