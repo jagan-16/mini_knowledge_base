@@ -199,7 +199,7 @@ class MetadataFilterQueryBuilder:
     def _build_in(
         self,
         metadata_value,
-        value: list[str],
+        value: list[str]|list[int]|list[float],
     ):
         """
         field IN (value1, value2, ...)
@@ -215,7 +215,7 @@ class MetadataFilterQueryBuilder:
     def _build_not_in(
         self,
         metadata_value,
-        value: list[str],
+        value: list[str]|list[int]|list[float],
     ):
         """
         field NOT IN (value1, value2, ...)
