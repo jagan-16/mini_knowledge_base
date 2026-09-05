@@ -11,6 +11,3 @@ class MetadataSchemaService:
             field: "<selected value>"
             for field in categories["fields"]
         }
-load = MetadataConfigService()
-catagories = load.get_categories()
-print(MetadataSchemaService().build_output_structure(catagories))

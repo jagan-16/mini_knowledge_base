@@ -94,18 +94,16 @@ class LLMService:
                     status_code=429,
                     detail="Groq rate limit exceeded. Please try again later.",
                 ) from exc
+            
+            
+            
+            raise
+                
+            
 
-            raise HTTPException(
-                status_code=502,
-                detail="Groq service returned an unexpected error.",
-            ) from exc
-
-        except Exception as exc:
-
-            raise HTTPException(
-                status_code=502,
-                detail="Failed to generate response from the language model.",
-            ) from exc
+        except Exception:
+            logger.exception("Unexpected error during LLM completion.")
+            raise
 
     def _build_messages(
         self,
