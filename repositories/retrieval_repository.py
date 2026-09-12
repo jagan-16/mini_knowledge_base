@@ -26,6 +26,7 @@ class RetrievalRepository:
         self,
         query_embedding: list[float],
         retrieval_filter: RetrievalFilter,
+        top_k : int = 20,
     ) -> list[RetrievedChunk]:
 
         distance = Chunk.embedding.cosine_distance(
@@ -79,7 +80,7 @@ class RetrievalRepository:
             .filter(*filters)
             .order_by(distance)
             .limit(
-                retrieval_filter.top_k
+                top_k
             )
         )
 

@@ -80,7 +80,6 @@ class QueryService:
                 )
 
             retrieval_filter = RetrievalFilter(
-                top_k=request.top_k,
                 document_id=request.document_id,
                 metadata_filters=metadata_filters,
             )

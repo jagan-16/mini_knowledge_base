@@ -1,6 +1,6 @@
-import json
 import logging
-
+import json
+from pydantic import ValidationError
 from docling_core.types.doc.document import DoclingDocument
 from internal_models.upload_data import UploadMetadata
 from services.llm_service import LLMService
@@ -12,6 +12,7 @@ from services.metadata_services.metadata_prompt import MetadataPromptService
 
 class MetadataClassificationService:
 
+    MAX_CLASSIFICATION_ATTEMPTS = 3
     def __init__(
         self,
         content_service: MetadataContentService,
@@ -29,11 +30,10 @@ class MetadataClassificationService:
         self.logger = logging.getLogger(__name__)
 
     def classify(
-        self,
-        document: DoclingDocument,
-    ) -> UploadMetadata:
+    self,
+    document: DoclingDocument,
+) -> UploadMetadata:
 
-        # 1. Build the classification context
         context = self.content_service.build_context(
             document
         )
@@ -43,48 +43,62 @@ class MetadataClassificationService:
                 "No classification context could be generated."
             )
 
-        # 2. Load classification configuration
         categories = self.category_service.get_categories()
-       
-        # 3. Build the dynamic output structure
-        output_structure = (
-            self.schema_service.build_output_structure(
-                categories
-            )
+
+        metadata_model = self.schema_service.build_model(
+            categories
         )
 
-        # 4. Build the LLM prompt
         prompt = self.prompt_service.build_prompt(
             document_text=context,
-            categories=categories,
-            output_structure=output_structure,
         )
 
-        # 5. Call the LLM
-        raw_response = self.llm_service.complete(
-            prompt=prompt,
-            history=[],
-            temperature=0.0,
-            response_format={
-                "type": "json_object"
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "document_metadata",
+                "strict": True,
+                "schema": metadata_model.model_json_schema(),
             },
-        )
+        }
+       
 
-        # 6. Convert the JSON response into a Python object
-        try:
-            metadata = json.loads(raw_response)
+        for attempt in range(
+            1,
+            self.MAX_CLASSIFICATION_ATTEMPTS + 1,
+        ):
+            try:
+                raw_response = self.llm_service.complete(
+                    prompt=prompt,
+                    history=[],
+                    temperature=0.0,
+                    response_format=response_format,
+                )
 
-        except json.JSONDecodeError as exc:
+                metadata = metadata_model.model_validate_json(
+                    raw_response
+                )
+              
+                return UploadMetadata(
+                    document_data=metadata.model_dump()
+                )
 
-            self.logger.error(
-                "Metadata classification returned invalid JSON.",
-                exc_info=True,
-            )
+            except ValidationError as exc:
 
-            raise ValueError(
-                "Metadata classification returned invalid JSON."
-            ) from exc
+                self.logger.warning(
+                    "Metadata classification validation failed "
+                    "on attempt %d/%d: %s",
+                    attempt,
+                    self.MAX_CLASSIFICATION_ATTEMPTS,
+                    exc,
+                )
 
-        return UploadMetadata(
-            document_data= metadata
+                if attempt == self.MAX_CLASSIFICATION_ATTEMPTS:
+                    raise ValueError(
+                        "Metadata classification failed after "
+                        f"{self.MAX_CLASSIFICATION_ATTEMPTS} attempts."
+                    ) from exc
+
+        raise RuntimeError(
+            "Metadata classification retry loop exited unexpectedly."
         )

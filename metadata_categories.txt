@@ -10,11 +10,12 @@
         "Legal",
         "Operations",
         "Other"
-      ]
+      ],
+      "nullable": false
     },
     "document_type": {
       "type": "string",
-      "description": "The primary type of the document.",
+      "description": "The primary type or format of the document itself. Classify what the document is, not merely the subject or topic it discusses.",
       "allowed_values": [
         "Technical Documentation",
         "Policy",
@@ -24,15 +25,18 @@
         "Book",
         "Research Paper",
         "Other"
-      ]
+      ],
+      "nullable": false
     },
     "published_year": {
       "type": "integer",
-      "description": "The year the document was published, issued, released, or created."
+      "description": "The year the document itself was published, issued, released, or created. Only extract a year when the document provides evidence that the year refers to the document itself. Do not use years that belong to examples, transactions, case studies, historical events, referenced documents, reporting periods, or other content inside the document." ,
+      "nullable": true
     },
     "document_version": {
       "type": "number",
-      "description":  "The version identifier of the document, if explicitly stated. If the version is mentioned as v1 or version 1, drop the prefix and store only the integer."
+      "description": "The version identifier of the document, if explicitly stated. If the version is mentioned as v1, version 1, or 1.2, remove the prefix and return only the numeric value.",
+      "nullable": true
     }
   }
 }

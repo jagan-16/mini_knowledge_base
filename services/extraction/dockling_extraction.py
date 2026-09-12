@@ -2,15 +2,50 @@ from io import BytesIO
 
 from fastapi import HTTPException, UploadFile
 
-from docling.datamodel.base_models import DocumentStream
-from docling.document_converter import DocumentConverter
-
+from docling.datamodel.base_models import DocumentStream , InputFormat
+from docling.datamodel.pipeline_options import (
+    PdfPipelineOptions,
+    TableStructureV2Options,
+     LayoutObjectDetectionOptions,
+)
+from docling.document_converter import(
+    DocumentConverter,
+    PdfFormatOption,
+    
+)
 
 
 class PDFExtractionService:
 
     def __init__(self):
-        self.converter = DocumentConverter()
+        
+        pipeline_options = PdfPipelineOptions(
+             do_ocr = False ,
+             do_table_structure = True
+                    
+        )
+        
+        pipeline_options.table_structure_options = TableStructureV2Options(
+                    do_cell_matching=True,
+)
+        
+        pipeline_options.layout_options = (
+                    LayoutObjectDetectionOptions.from_preset(
+                        "layout_heron_101"
+                    )
+                )
+                        
+   
+        
+        pipeline_options.table_structure_options.do_cell_matching = True
+        
+        self.converter = DocumentConverter(
+            format_options = {
+                InputFormat.PDF:PdfFormatOption(
+                    pipeline_options = pipeline_options
+                )
+            }
+        )
 
     def extract(self, file: UploadFile):
 
