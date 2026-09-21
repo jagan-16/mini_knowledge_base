@@ -1,5 +1,9 @@
 from services.extraction.txt_extractor import TXTExtractionService
+from services.extraction.image_link_service import ImageService
+from services.groq_service import GroqService
 from services.extraction.dockling_extraction import PDFExtractionService
+from services.extraction.picture_semantic_service import PictureSemanticService
+
 from fastapi import HTTPException
 
 class ExtractionFactory:
@@ -8,7 +12,10 @@ class ExtractionFactory:
 
         self.extractors = {
 
-            "application/pdf": PDFExtractionService(),
+            "application/pdf": PDFExtractionService(PictureSemanticService(
+                        groq_service=GroqService(),
+                        image_service=ImageService()
+                )),
 
             "text/plain": TXTExtractionService()
 

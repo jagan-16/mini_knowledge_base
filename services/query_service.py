@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from metadata_filter_mapper import MetadataFilterMapper
 from sqlalchemy.orm import Session
 from pathlib import Path
-
+from services.groq_service import GroqService
 from pydantic_validation import (
     Citation,
     QuestionRequest,
@@ -38,7 +38,9 @@ class QueryService:
 
         self.prompt_service = PromptService()
 
-        self.llm_service = LLMService()
+        self.llm_service = LLMService(groq_service=
+            GroqService()
+        )
 
         self.metadata_filter_mapper = MetadataFilterMapper()
         

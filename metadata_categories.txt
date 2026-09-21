@@ -30,12 +30,12 @@
     },
     "published_year": {
       "type": "integer",
-      "description": "The year the document itself was published, issued, released, or created. Only extract a year when the document provides evidence that the year refers to the document itself. Do not use years that belong to examples, transactions, case studies, historical events, referenced documents, reporting periods, or other content inside the document." ,
+      "description": "The year the document itself was published, issued, released, or created. Only extract a year when the document provides evidence that the year refers to the document itself. Do not use years that belong to examples, transactions, case studies, historical events, referenced documents, reporting periods, or other content inside the document. If no reliable document-level year is found, return the JSON null value. Never return the string \"null\", \"None\", \"N/A\", an empty string, or a placeholder.",
       "nullable": true
     },
     "document_version": {
       "type": "number",
-      "description": "The version identifier of the document, if explicitly stated. If the version is mentioned as v1, version 1, or 1.2, remove the prefix and return only the numeric value.",
+      "description": "The version identifier of the document, if explicitly stated. If the version is mentioned as v1, version 1, or 1.2, remove the prefix and return only the numeric value. If no reliable document version is explicitly stated, return the JSON null value. Never return the string \"null\", \"None\", \"N/A\", an empty string, 0, or any other placeholder. Examples: \"v1\" → 1, \"version 1.2\" → 1.2, no version stated → null.",
       "nullable": true
     }
   }

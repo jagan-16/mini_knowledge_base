@@ -1,12 +1,13 @@
 from io import BytesIO
 
 from fastapi import HTTPException, UploadFile
-
+from services.extraction.picture_semantic_service import PictureSemanticService
 from docling.datamodel.base_models import DocumentStream , InputFormat
 from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
-    TableStructureV2Options,
-     LayoutObjectDetectionOptions,
+    TableStructureOptions,
+    LayoutObjectDetectionOptions,
+    TableFormerMode
 )
 from docling.document_converter import(
     DocumentConverter,
@@ -17,17 +18,23 @@ from docling.document_converter import(
 
 class PDFExtractionService:
 
-    def __init__(self):
+    def __init__(self,
+        picture_semantic_service: PictureSemanticService,):
+        self.picture_semantic_service = picture_semantic_service
         
         pipeline_options = PdfPipelineOptions(
              do_ocr = False ,
-             do_table_structure = True
+             do_table_structure = True , 
+             generate_page_images=True
                     
-        )
+    )
         
-        pipeline_options.table_structure_options = TableStructureV2Options(
-                    do_cell_matching=True,
-)
+        pipeline_options.table_structure_options = TableStructureOptions(
+            do_cell_matching = True,
+            mode = TableFormerMode.ACCURATE
+          
+         
+        )
         
         pipeline_options.layout_options = (
                     LayoutObjectDetectionOptions.from_preset(
@@ -37,7 +44,7 @@ class PDFExtractionService:
                         
    
         
-        pipeline_options.table_structure_options.do_cell_matching = True
+       # pipeline_options.table_structure_options.do_cell_matching = True
         
         self.converter = DocumentConverter(
             format_options = {
@@ -83,5 +90,9 @@ class PDFExtractionService:
                 status_code=400,
                 detail="Docling failed to create a document."
             )
-
-        return result.document
+            
+        # Enrich PictureItems
+        document = self.picture_semantic_service.enrich_document(
+            result.document
+        )
+        return document 

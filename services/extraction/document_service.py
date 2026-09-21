@@ -14,6 +14,7 @@ from services.metadata_services.metadata_config_service import MetadataConfigSer
 from services.metadata_services.metadata_schema_service import MetadataSchemaService
 from services.metadata_services.metadata_prompt import MetadataPromptService
 from services.llm_service import LLMService
+from services.groq_service import GroqService
 import logging
 
 
@@ -58,7 +59,8 @@ class DocumentService:
                 category_service=MetadataConfigService(),
                 schema_service=MetadataSchemaService(),
                 prompt_service=MetadataPromptService(),
-                 llm_service=LLMService())
+                llm_service=LLMService(GroqService())
+                )
         self.chunking_service = ChunkingService()
         self.embedding_service = EmbeddingService()
 

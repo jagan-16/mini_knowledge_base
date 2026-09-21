@@ -64,7 +64,7 @@ class MetadataPromptService:
 
             Nullability:
                 For nullable fields:
-                    - Return null only when the document provides no reliable
+                    - Return json null only when the document provides no reliable
                     basis for determining the field's value.
                     - For enum-valued fields, do not return null merely because
                     the classification is ambiguous. Apply the ambiguity rules

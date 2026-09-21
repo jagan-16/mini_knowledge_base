@@ -1,12 +1,9 @@
 from fastapi import HTTPException
-from groq import (
-    APIStatusError,
-    
-)
 from litellm import token_counter
 from services.model_loader import groq_client
 from database_model import Message
 from internal_models.prompt_model import Prompt
+from services.groq_service import GroqService
 import logging
 
 
@@ -26,8 +23,9 @@ class LLMService:
         - SYSTEM_PROMPT_BUDGET
     )
 
-    def __init__(self):
-        self.client = groq_client
+    def __init__(self , groq_service: GroqService):
+        self.logger = logging.getLogger(__name__)
+        self.groq_service = groq_service
 
     def complete(
          self,
@@ -37,7 +35,7 @@ class LLMService:
     response_format: dict | None = None,
     ) -> str:
         
-        logger = logging.getLogger(__name__)
+       
         history = history or []
 
         messages = self._build_messages(
@@ -49,62 +47,18 @@ class LLMService:
             messages
         )
 
-        try:
+        return self.groq_service.chat_completion(
+            model=self.MODEL_NAME,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=self.OUTPUT_TOKEN_BUDGET,
+            response_format=response_format,
+        )
 
-            response = self.client.chat.completions.create(
 
-                model=self.MODEL_NAME,
 
-                messages=messages,
 
-                temperature=temperature,
-
-                max_tokens=self.OUTPUT_TOKEN_BUDGET,
-                
-                response_format=response_format, 
-                
-               
-            )
             
-            return (
-                response
-                .choices[0]
-                .message
-                .content
-            )
-
-        except APIStatusError as exc:
-            
-            logger.exception(
-                "Groq API error. status=%s, response=%s",
-                exc.status_code,
-                exc,
-            )
-
-            if exc.status_code == 413:
-
-                raise HTTPException(
-                    status_code=413,
-                    detail="Prompt exceeds the model context window.",
-                ) from exc
-
-            if exc.status_code == 429:
-
-                raise HTTPException(
-                    status_code=429,
-                    detail="Groq rate limit exceeded. Please try again later.",
-                ) from exc
-            
-            
-            
-            raise
-                
-            
-
-        except Exception:
-            logger.exception("Unexpected error during LLM completion.")
-            raise
-
     def _build_messages(
         self,
         prompt: Prompt,
@@ -165,3 +119,6 @@ class LLMService:
                     f"Received {input_tokens} tokens."
                 ),
             )
+            
+            
+            
