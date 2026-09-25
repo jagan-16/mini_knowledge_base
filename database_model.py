@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text , DateTime , BigInteger , Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Text , DateTime , BigInteger , Index
 from sqlalchemy.dialects.postgresql import UUID , JSONB ,ARRAY
 import uuid
 from sqlalchemy.orm import relationship
@@ -132,7 +132,20 @@ class Chunk(Base, TimestampMixin):
         back_populates="chunks"
     )
 
-  
+    __table_args__ = (
+        Index(
+            "ix_chunks_embedding_hnsw",
+            embedding,
+            postgresql_using="hnsw",
+            postgresql_ops={
+                "embedding": "vector_cosine_ops"
+            },
+            postgresql_with={
+                "m": 16,
+                "ef_construction": 64
+            }
+        ),
+    )
     
 
 

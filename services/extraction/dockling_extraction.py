@@ -90,6 +90,12 @@ class PDFExtractionService:
                 status_code=400,
                 detail="Docling failed to create a document."
             )
+        
+        if not result.document.pages:
+            raise HTTPException(
+                status_code=400,
+                detail="PDF contains no pages."
+            )
             
         # Enrich PictureItems
         document = self.picture_semantic_service.enrich_document(

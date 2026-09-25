@@ -215,7 +215,13 @@ chunking, embedding, retrieval, and downstream question answering.
                 picture.self_ref,
             )
             return
-
+        self.logger.info(
+            "Picture dimensions | ref=%s | size=%sx%s",
+            picture.self_ref,
+            image.width,
+            image.height,
+        )
+        
         image_data_url = self.image_service.to_data_url(
             image
         )

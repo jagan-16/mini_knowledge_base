@@ -68,8 +68,20 @@ class MetadataClassificationService:
             self.MAX_CLASSIFICATION_ATTEMPTS + 1,
         ):
             try:
+                current_prompt = prompt
+
+                if attempt > 1:
+                    current_prompt = (
+                        f"{prompt}\n\n"
+                        "Your previous response failed schema validation.\n"
+                        "Validation errors:\n"
+                        f"{repair_feedback}\n\n"
+                        "Correct the response according to the schema. "
+                        "Return only the corrected JSON."
+                    )
+
                 raw_response = self.llm_service.complete(
-                    prompt=prompt,
+                    prompt=current_prompt,
                     history=[],
                     temperature=0.0,
                     response_format=response_format,
@@ -78,13 +90,12 @@ class MetadataClassificationService:
                 metadata = metadata_model.model_validate_json(
                     raw_response
                 )
-              
+
                 return UploadMetadata(
                     document_data=metadata.model_dump()
                 )
 
             except ValidationError as exc:
-
                 self.logger.warning(
                     "Metadata classification validation failed "
                     "on attempt %d/%d: %s",
@@ -98,6 +109,8 @@ class MetadataClassificationService:
                         "Metadata classification failed after "
                         f"{self.MAX_CLASSIFICATION_ATTEMPTS} attempts."
                     ) from exc
+
+                repair_feedback = self._build_repair_feedback(exc)
 
         raise RuntimeError(
             "Metadata classification retry loop exited unexpectedly."

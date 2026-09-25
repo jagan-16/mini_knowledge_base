@@ -22,7 +22,7 @@ def render_upload_section():
         suffix = st.session_state.upload_key_suffix
 
         uploaded_file = st.file_uploader(
-            "Choose a PDF or TXT file", type=["pdf", "txt"], key=f"upload_file_input_{suffix}"
+            "Choose a PDF ", type=["pdf"], key=f"upload_file_input_{suffix}"
         )
       
 

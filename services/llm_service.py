@@ -28,11 +28,11 @@ class LLMService:
         self.groq_service = groq_service
 
     def complete(
-         self,
-    prompt: Prompt,
-    history: list[Message] | None = None,
-    temperature: float = 0.2,
-    response_format: dict | None = None,
+        self,
+        prompt: Prompt,
+        history: list[Message] | None = None,
+        temperature: float = 0.2,
+        response_format: dict | None = None,
     ) -> str:
         
        
